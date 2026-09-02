@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Logs
+logs/
+*.log
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Test coverage
+coverage/
+
+# Editor
+.DS_Store
+*.tsbuildinfo
+
+# Office lock files
+~$*

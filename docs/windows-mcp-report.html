@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Windows MCP Server — Capability Report</title>
+<style>
+  :root {
+    --bg: #0b1020;
+    --bg-soft: #11182e;
+    --panel: #ffffff;
+    --ink: #1c2333;
+    --ink-soft: #4a5468;
+    --muted: #6b7689;
+    --line: #e4e8f0;
+    --accent: #3b6cf6;
+    --accent-2: #6d4aff;
+    --green: #15924d;
+    --green-bg: #e7f6ee;
+    --amber: #9a6700;
+    --amber-bg: #fff4e0;
+    --red: #b42318;
+    --red-bg: #fdeceb;
+    --slate: #475067;
+    --slate-bg: #eef1f6;
+    --shadow: 0 1px 2px rgba(16,24,40,.06), 0 8px 24px rgba(16,24,40,.06);
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink);
+    background: #f5f7fb;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code, .mono {
+    font-family: "SF Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    font-size: .88em;
+  }
+  code {
+    background: var(--slate-bg);
+    color: #2a3346;
+    padding: .12em .42em;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+  }
+
+  /* Layout */
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 22px; }
+  header.hero {
+    background: radial-gradient(1200px 500px at 15% -10%, #25347a 0%, transparent 60%),
+                radial-gradient(900px 500px at 100% 0%, #3a2a78 0%, transparent 55%),
+                linear-gradient(180deg, var(--bg) 0%, var(--bg-soft) 100%);
+    color: #fff;
+    padding: 56px 0 40px;
+    border-bottom: 1px solid rgba(255,255,255,.06);
+  }
+  .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: .16em;
+    font-size: 12px;
+    font-weight: 700;
+    color: #9fb3ff;
+    margin: 0 0 14px;
+  }
+  header.hero h1 {
+    margin: 0 0 14px;
+    font-size: 40px;
+    line-height: 1.12;
+    font-weight: 800;
+    letter-spacing: -.02em;
+  }
+  header.hero p.lead {
+    margin: 0;
+    font-size: 18px;
+    color: #c7d0e6;
+    max-width: 760px;
+  }
+  .badges { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: rgba(255,255,255,.08);
+    border: 1px solid rgba(255,255,255,.16);
+    color: #eaf0ff;
+    padding: 7px 13px; border-radius: 999px;
+    font-size: 13px; font-weight: 600;
+  }
+  .badge .dot { width: 8px; height: 8px; border-radius: 50%; background: #36d27a; box-shadow: 0 0 0 3px rgba(54,210,122,.18); }
+  .badge.amber .dot { background: #ffba49; box-shadow: 0 0 0 3px rgba(255,186,73,.18); }
+  .meta-row { display: flex; flex-wrap: wrap; gap: 22px; margin-top: 26px; font-size: 13px; color: #9aa6c4; }
+  .meta-row b { color: #dfe6f7; font-weight: 600; }
+
+  /* Sticky nav */
+  nav.toc {
+    position: sticky; top: 0; z-index: 20;
+    background: rgba(255,255,255,.92);
+    backdrop-filter: saturate(180%) blur(8px);
+    border-bottom: 1px solid var(--line);
+  }
+  nav.toc .wrap { display: flex; gap: 6px; overflow-x: auto; padding-top: 10px; padding-bottom: 10px; }
+  nav.toc a {
+    white-space: nowrap; color: var(--slate);
+    font-size: 13.5px; font-weight: 600;
+    padding: 7px 12px; border-radius: 8px;
+  }
+  nav.toc a:hover { background: var(--slate-bg); text-decoration: none; }
+
+  main { padding: 16px 0 60px; }
+  section { margin-top: 40px; }
+  section > h2 {
+    font-size: 24px; letter-spacing: -.01em; margin: 0 0 6px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  section > h2 .num {
+    font-size: 13px; font-weight: 700; color: var(--accent);
+    background: #eaf0ff; border: 1px solid #d7e1ff;
+    width: 26px; height: 26px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  section > p.sub { color: var(--ink-soft); margin: 0 0 18px; max-width: 800px; }
+
+  .card {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: var(--radius); box-shadow: var(--shadow);
+    padding: 22px;
+  }
+
+  /* Capability grid */
+  .grid { display: grid; gap: 16px; }
+  .grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+  .grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .cap {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 18px 18px 16px;
+    box-shadow: var(--shadow); position: relative; overflow: hidden;
+  }
+  .cap::before {
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+    background: linear-gradient(180deg, var(--accent), var(--accent-2));
+  }
+  .cap h3 { margin: 0 0 6px; font-size: 16px; }
+  .cap p { margin: 0; color: var(--ink-soft); font-size: 14px; }
+  .cap .tag {
+    display: inline-block; margin-top: 12px; font-size: 11.5px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .05em; padding: 4px 9px; border-radius: 999px;
+  }
+  .tag.live { color: var(--green); background: var(--green-bg); }
+  .tag.soon { color: var(--slate); background: var(--slate-bg); }
+  .tag.first { color: var(--accent-2); background: #efeaff; }
+  .diff-band { margin: 24px 0 12px; font-size: 12.5px; font-weight: 800; text-transform: uppercase;
+    letter-spacing: .06em; color: var(--slate); display: flex; align-items: center; gap: 12px; }
+  .diff-band::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+  .cap .gap { margin-top: 11px; padding-top: 10px; border-top: 1px dashed var(--line);
+    font-size: 13px; color: var(--ink-soft); }
+  .cap .gap b { color: var(--ink); }
+
+  /* Tables */
+  .table-scroll { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--line); box-shadow: var(--shadow); }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); font-size: 14px; }
+  thead th {
+    text-align: left; background: #f7f9fd; color: var(--slate);
+    font-size: 12px; text-transform: uppercase; letter-spacing: .05em;
+    padding: 12px 14px; border-bottom: 1px solid var(--line); white-space: nowrap;
+  }
+  tbody td { padding: 11px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tbody tr:last-child td { border-bottom: 0; }
+  tbody tr:hover { background: #fafbfe; }
+  td .toolname { font-weight: 700; }
+
+  .pill {
+    display: inline-block; font-size: 11.5px; font-weight: 700;
+    padding: 3px 9px; border-radius: 999px; white-space: nowrap;
+  }
+  .pill.read { color: var(--green); background: var(--green-bg); }
+  .pill.mut { color: var(--amber); background: var(--amber-bg); }
+  .pill.des { color: var(--red); background: var(--red-bg); }
+  .pill.var { color: var(--slate); background: var(--slate-bg); }
+
+  ul.clean { margin: 0; padding-left: 20px; color: var(--ink-soft); }
+  ul.clean li { margin: 5px 0; }
+
+  .callout {
+    border-left: 4px solid var(--accent); background: #f3f7ff;
+    border-radius: 10px; padding: 14px 16px; color: #2c3650; font-size: 14px;
+  }
+  .callout.warn { border-left-color: var(--amber); background: #fff8ec; }
+
+  .kv { display: grid; grid-template-columns: 220px 1fr; gap: 0; }
+  .kv > div { padding: 10px 14px; border-bottom: 1px solid var(--line); }
+  .kv > div:nth-child(odd) { font-weight: 600; color: var(--slate); background: #f7f9fd; }
+  .kv > div:nth-last-child(1), .kv > div:nth-last-child(2) { border-bottom: 0; }
+
+  /* Flow */
+  .flow { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+  .flow .node {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+    padding: 9px 13px; font-size: 13px; font-weight: 600; box-shadow: var(--shadow);
+  }
+  .flow .node.dim { color: var(--muted); border-style: dashed; box-shadow: none; }
+  .flow .arrow { color: var(--muted); font-weight: 700; }
+
+  /* Roadmap */
+  .phase { display: flex; gap: 12px; align-items: flex-start; padding: 12px 0; border-bottom: 1px solid var(--line); }
+  .phase:last-child { border-bottom: 0; }
+  .phase .code { font-weight: 800; font-size: 13px; min-width: 92px; color: var(--ink); }
+  .phase .body { flex: 1; color: var(--ink-soft); font-size: 14px; }
+  .phase .body b { color: var(--ink); }
+  .status {
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .status.done { color: var(--green); background: var(--green-bg); }
+  .status.plan { color: var(--slate); background: var(--slate-bg); }
+  .status.exp { color: var(--amber); background: var(--amber-bg); }
+
+  .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .stat { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); text-align: center; }
+  .stat .n { font-size: 30px; font-weight: 800; letter-spacing: -.02em; color: var(--ink); }
+  .stat .l { font-size: 12.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; margin-top: 4px; }
+
+  pre.block {
+    background: #0d1326; color: #d7e0f5; border-radius: 12px; padding: 16px 18px;
+    overflow-x: auto; font-size: 13px; border: 1px solid #1d2747; line-height: 1.55;
+  }
+  pre.block .c { color: #7f8db3; }
+  pre.block .k { color: #8fb6ff; }
+
+  footer { border-top: 1px solid var(--line); background: var(--panel); padding: 26px 0; color: var(--muted); font-size: 13px; }
+  footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+
+  @media (max-width: 760px) {
+    header.hero h1 { font-size: 30px; }
+    .grid.cols-2, .grid.cols-3 { grid-template-columns: 1fr; }
+    .stat-row { grid-template-columns: repeat(2, 1fr); }
+    .kv { grid-template-columns: 1fr; }
+    .kv > div:nth-child(odd) { border-bottom: 0; }
+    .tool-count { margin-left: 0; width: 100%; }
+  }
+
+  /* Interactive tool explorer */
+  section[id] { scroll-margin-top: 120px; }
+
+  a.stat { color: inherit; text-decoration: none; display: block; cursor: pointer;
+    transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease; }
+  a.stat:hover { text-decoration: none; transform: translateY(-2px); border-color: #c7d3ee;
+    box-shadow: 0 8px 22px rgba(16,24,40,.10); }
+  a.stat:hover .n { color: var(--accent); }
+
+  .toolbar {
+    position: sticky; top: 52px; z-index: 18;
+    background: rgba(255,255,255,.94);
+    backdrop-filter: saturate(180%) blur(8px);
+    border-bottom: 1px solid var(--line);
+    box-shadow: 0 6px 16px rgba(16,24,40,.04);
+  }
+  .toolbar-inner { display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+    padding-top: 11px; padding-bottom: 11px; }
+  .tool-search { flex: 1 1 260px; display: flex; align-items: center; gap: 8px; min-width: 200px;
+    background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; }
+  .tool-search:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,108,246,.12); }
+  .tool-search svg { flex: none; color: var(--muted); }
+  .tool-search input { border: 0; outline: 0; width: 100%; font-size: 14px; color: var(--ink); background: transparent; }
+  .tool-select { border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px;
+    font-size: 13.5px; font-weight: 600; color: var(--slate); background: #fff; cursor: pointer; }
+  .tool-select:focus { outline: 0; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,108,246,.12); }
+  .chips { display: inline-flex; gap: 6px; flex-wrap: wrap; }
+  .chip { font: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer; line-height: 1;
+    border: 1px solid var(--line); background: #fff; color: var(--slate); padding: 8px 12px; border-radius: 999px; }
+  .chip:hover { background: var(--slate-bg); }
+  .chip.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .chip[data-risk="read"].active { background: var(--green); border-color: var(--green); }
+  .chip[data-risk="mut"].active { background: var(--amber); border-color: var(--amber); }
+  .chip[data-risk="des"].active { background: var(--red); border-color: var(--red); }
+  .tool-count { margin-left: auto; font-size: 12.5px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+  .tool-count b { color: var(--ink); }
+
+  tr.tool-hidden { display: none; }
+  section.section-hidden { display: none; }
+  nav.toc a.dim { opacity: .35; }
+  .no-results { display: none; margin-top: 26px; text-align: center; color: var(--ink-soft);
+    border: 1px dashed var(--line); border-radius: var(--radius); padding: 34px 20px; background: var(--panel); }
+  .no-results.show { display: block; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Capability Report · MVP+</p>
+    <h1>Windows MCP Server</h1>
+    <p class="lead">
+      A production-grade <strong>Model Context Protocol</strong> server that exposes local &amp; remote
+      Windows and Windows&nbsp;365 Cloud&nbsp;PC management, diagnostics, maintenance, and live fleet
+      telemetry to AI clients and SaaS backends — behind one consistent, automatable, auditable interface.
+    </p>
+    <div class="badges">
+      <span class="badge"><span class="dot"></span> Build passing</span>
+      <span class="badge"><span class="dot"></span> 56/56 tests</span>
+      <span class="badge"><span class="dot"></span> Lint clean</span>
+      <span class="badge"><span class="dot"></span> 0 vulnerabilities</span>
+      <span class="badge amber"><span class="dot"></span> MVP+ scope</span>
+    </div>
+    <div class="meta-row">
+      <span><b>Version</b> 0.1.0</span>
+      <span><b>Phases shipped</b> P0 · P1 · P-Report · P2 · P3 · P-State · P-Migrate · P-Failover · P-Agent · P-Onboarding · P-SaaS</span>
+      <span><b>Stack</b> TypeScript / Node.js · MCP SDK v1.x</span>
+      <span><b>Report date</b> 2026-06-11</span>
+    </div>
+  </div>
+</header>
+
+<nav class="toc">
+  <div class="wrap">
+    <a href="#overview">Overview</a>
+    <a href="#capabilities">Capabilities</a>
+    <a href="#differentiators">Differentiators</a>
+    <a href="#local-tools">Local Windows tools</a>
+    <a href="#cloud-tools">Windows 365 tools</a>
+    <a href="#remote-tools">Remote Windows tools</a>
+    <a href="#aws-tools">AWS WorkSpaces tools</a>
+    <a href="#avd-tools">Azure Virtual Desktop tools</a>
+    <a href="#citrix-tools">Citrix DaaS tools</a>
+    <a href="#horizon-tools">Omnissa Horizon tools</a>
+    <a href="#horizoncloud-tools">Horizon Cloud tools</a>
+    <a href="#ws1-tools">Workspace ONE UEM tools</a>
+    <a href="#state-tools">State portability tools</a>
+    <a href="#migration-tools">Migration tools</a>
+    <a href="#failover-tools">Continuity &amp; failover tools</a>
+    <a href="#agent-tools">Agent tools</a>
+    <a href="#reporting-tools">Reporting tools</a>
+    <a href="#onboarding-tools">Onboarding tools</a>
+    <a href="#security">Security</a>
+    <a href="#architecture">Architecture</a>
+    <a href="#config">Configuration</a>
+    <a href="#getting-started">Getting started</a>
+    <a href="#roadmap">Roadmap</a>
+  </div>
+</nav>
+
+<div class="toolbar" id="toolbar" aria-label="Tool explorer">
+  <div class="wrap toolbar-inner">
+    <label class="tool-search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <input id="toolSearch" type="search" placeholder="Search tools by name or description…" autocomplete="off" spellcheck="false" aria-label="Search tools" />
+    </label>
+    <select id="envFilter" class="tool-select" aria-label="Filter by environment">
+      <option value="all">All environments</option>
+    </select>
+    <div class="chips" id="riskFilters" role="group" aria-label="Filter by risk class">
+      <button type="button" class="chip active" data-risk="all">All</button>
+      <button type="button" class="chip" data-risk="read">Read-only</button>
+      <button type="button" class="chip" data-risk="mut">Mutating</button>
+      <button type="button" class="chip" data-risk="des">Destructive</button>
+    </div>
+    <span class="tool-count" id="toolCount" aria-live="polite"></span>
+  </div>
+</div>
+
+<main>
+  <div class="wrap">
+
+    <div class="no-results" id="noResults">
+      <strong>No tools match your filters.</strong>
+      <div style="margin-top:6px"><a href="#" id="clearFilters">Clear all filters</a></div>
+    </div>
+
+    <!-- OVERVIEW -->
+    <section id="overview">
+      <h2><span class="num">1</span> What is it?</h2>
+      <p class="sub">
+        The Windows MCP Server lets an AI assistant (VS Code, Claude Desktop, custom agents) — or a
+        programmatic SaaS backend — manage local &amp; remote Windows hosts and Windows&nbsp;365 Cloud&nbsp;PCs
+        in natural language, with a live, normalized view of the whole fleet. Instead of hopping between
+        PowerShell, the Intune portal, and the Windows&nbsp;365 console, an operator asks a question and
+        the assistant calls vetted, validated, audited tools.
+      </p>
+
+      <div class="stat-row">
+        <a class="stat" id="statTools" href="#local-tools" title="Search &amp; filter every tool"><div class="n">119</div><div class="l">Tools</div></a>
+        <a class="stat" href="#capabilities" title="Jump to providers &amp; capabilities"><div class="n">9</div><div class="l">Providers</div></a>
+        <a class="stat" href="#architecture" title="Jump to transports &amp; architecture"><div class="n">3</div><div class="l">Channels</div></a>
+        <a class="stat" href="#reporting-tools" title="Jump to telemetry tools"><div class="n">Live</div><div class="l">Telemetry</div></a>
+      </div>
+
+      <div style="margin-top:18px" class="callout">
+        <strong>Two ways to consume it.</strong> <em>Interactive</em> — a human admin driving an AI client
+        over <code>stdio</code>. <em>Programmatic</em> — a SaaS backend calling tools as a remote
+        management API over Streamable HTTP, with or without its own LLM.
+      </div>
+    </section>
+
+    <!-- CAPABILITIES -->
+    <section id="capabilities">
+      <h2><span class="num">2</span> Capability classes</h2>
+      <p class="sub">Every capability class below is live today — local &amp; remote Windows, the full Windows&nbsp;365 fleet, all four VDI/DaaS platforms, cloud migration, cross-cloud continuity, and a normalized telemetry layer — plus a self-service onboarding flow that provisions a tenant's access in minutes.</p>
+      <div class="grid cols-2">
+        <div class="cap">
+          <h3>1 · Local / host Windows management</h3>
+          <p>Arbitrary PowerShell, WMI/CIM queries, service &amp; process control, event-log inspection, disk &amp; network diagnostics, Windows Update, curated troubleshooters.</p>
+          <span class="tag live">● Live in MVP</span>
+        </div>
+        <div class="cap">
+          <h3>2 · Windows 365 Cloud PC fleet</h3>
+          <p>List, inspect, reboot, reprovision, restore, resize, rename, troubleshoot and end-grace-period of Cloud PCs via Microsoft Graph.</p>
+          <span class="tag live">● Live in MVP</span>
+        </div>
+        <div class="cap">
+          <h3>3 · Multi-platform VDI / DaaS</h3>
+          <p><strong>Five DaaS/VDI platforms are live</strong> — AWS WorkSpaces, Azure Virtual Desktop, Citrix DaaS, Omnissa Horizon, and Omnissa Horizon Cloud (next-gen): inventory, power, maintenance, and live session control, each on its official API. Horizon instant-clone image recompose is live; broader image rollout lands with the orchestration phase.</p>
+          <span class="tag live">● 5 platforms live</span>
+        </div>
+        <div class="cap">
+          <h3>4 · Cloud transformation &amp; migration</h3>
+          <p><strong>Live.</strong> Move a user from a physical/VDI desktop to a cloud desktop via an audited, async orchestrator: plan (dry-run) → provision → capture → restore → verify, with the source retained until verified.</p>
+          <span class="tag live">● Orchestrator live</span>
+        </div>
+        <div class="cap">
+          <h3>5 · Cross-cloud continuity &amp; failover</h3>
+          <p><strong>Live.</strong> Fail a user's workspace over between substrates (e.g. Windows 365 ↔ AWS WorkSpaces) for DR or capacity events, then fail back — health-triggered, telemetry-informed, state rehydrated, fully gated and audited.</p>
+          <span class="tag live">● Controller live</span>
+        </div>
+        <div class="cap">
+          <h3>6 · Real-time reporting &amp; telemetry</h3>
+          <p>A normalized, live observability layer — fleet snapshots, history queries, threshold alerts, and live MCP telemetry resources across every available substrate.</p>
+          <span class="tag live">● Live in MVP+</span>
+        </div>
+        <div class="cap">
+          <h3>7 · Self-service onboarding &amp; access provisioning</h3>
+          <p>A guided front door: for each platform the server emits the exact least-privilege grant — a one-click Microsoft Entra admin-consent URL, or a copy-paste IAM policy / Azure RBAC / Citrix-API recipe — then auto-verifies the grant with a live read. Consent over keys-to-the-kingdom.</p>
+          <span class="tag live">● Live</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- DIFFERENTIATORS -->
+    <section id="differentiators">
+      <h2><span class="num" style="width:auto;padding:0 9px;background:#efeaff;border-color:#dcd2ff;color:var(--accent-2)">NEW</span> Market differentiators</h2>
+      <p class="sub">The capabilities below are rare or absent in today's endpoint / DaaS management market — either because incumbents optimise for single-cloud lock-in, or because the tooling predates AI-native, closed-loop automation. Each card states the gap it fills, and whether it ships today or is a net-new opportunity the architecture is already positioned to deliver.</p>
+
+      <div class="diff-band">Net-new opportunities — not offered in the market today</div>
+      <div class="grid cols-2">
+        <div class="cap">
+          <h3>Closed-loop autonomous remediation at fleet scale</h3>
+          <p>Wire the live alert engine to the self-verifying agent: a threshold breach auto-dispatches a remediation to the affected endpoint, which applies the fix, <strong>proves the improvement, and rolls back on failure</strong> — no human in the loop above the configured autonomy ceiling.</p>
+          <p class="gap"><b>Market gap:</b> evidence-based, auto-reverting autonomous remediation across heterogeneous endpoints and DaaS isn't offered today — automations remain open-loop and human-gated.</p>
+          <span class="tag soon">○ Net-new · building blocks shipped</span>
+        </div>
+        <div class="cap">
+          <h3>Predictive, pre-emptive failover</h3>
+          <p>Trend each substrate's health score and warm-stage a cross-vendor target <strong>before</strong> the primary degrades — disaster recovery that acts ahead of the outage rather than after it.</p>
+          <p class="gap"><b>Market gap:</b> failover in the market is reactive and single-cloud; predictive cross-vendor pre-staging is unaddressed.</p>
+          <span class="tag soon">○ Net-new opportunity</span>
+        </div>
+        <div class="cap">
+          <h3>Desktop-as-commodity portability (bring-your-own-cloud)</h3>
+          <p>On-demand relocation of a user's full desktop and settings between <strong>any two DaaS vendors</strong> — Windows 365, AWS WorkSpaces, Citrix, Horizon — treating the cloud desktop as a swappable commodity.</p>
+          <p class="gap"><b>Market gap:</b> the DaaS market is built on lock-in; true any-to-any desktop portability is a structural gap no incumbent is incentivised to close.</p>
+          <span class="tag soon">○ Net-new opportunity</span>
+        </div>
+        <div class="cap">
+          <h3>Full-fidelity edge user-data migration</h3>
+          <p>Use the outbound agent to capture real user data (USMT / FSLogix-class) at the edge, turning today's honest <code>referenced</code> fidelity into <code>full</code> for cloud targets — bulk user-state migration without the manual USMT project.</p>
+          <p class="gap"><b>Market gap:</b> bytes-level user-data migration into and between clouds still means bespoke USMT/FSLogix work; an automated, audited path is missing.</p>
+          <span class="tag soon">○ Net-new · agent extends today's capture</span>
+        </div>
+      </div>
+
+      <div class="diff-band">Already shipped — and still uncommon in the market</div>
+      <div class="grid cols-2">
+        <div class="cap">
+          <h3>Cross-vendor failover between competing DaaS clouds</h3>
+          <p>Fail a user from Windows 365 to AWS WorkSpaces — or Citrix ↔ Horizon — and back again: telemetry-informed, state-rehydrated, fully gated and audited.</p>
+          <p class="gap"><b>Market gap:</b> every DaaS vendor offers DR only <em>within</em> its own cloud. Continuity across competitors is something none of them sell.</p>
+          <span class="tag live">● Live</span>
+        </div>
+        <div class="cap">
+          <h3>Vendor-agnostic, reversible migration orchestrator</h3>
+          <p>An audited, async <strong>plan → provision → capture → restore → verify</strong> pipeline that keeps the source intact until the target is verified, with a dry-run fidelity preview before anything moves.</p>
+          <p class="gap"><b>Market gap:</b> migration tooling is typically one-way and vendor-specific (into a single cloud); reversible, any-to-any, preview-first migration is rare.</p>
+          <span class="tag live">● Live</span>
+        </div>
+        <div class="cap">
+          <h3>One normalized telemetry &amp; alert plane across 9 substrates</h3>
+          <p>Local &amp; remote Windows, Windows 365, AVD, Citrix, Horizon, Horizon Cloud, AWS WorkSpaces and Workspace ONE — collapsed into a single metric model, alert engine and live MCP telemetry feed.</p>
+          <p class="gap"><b>Market gap:</b> fleet monitoring is almost always per-silo; one normalized pane spanning competing vendors is uncommon.</p>
+          <span class="tag live">● Live</span>
+        </div>
+        <div class="cap">
+          <h3>Self-verifying remediation with auto-rollback</h3>
+          <p>Measure a health score, checkpoint, apply the fix, re-measure, and <strong>automatically revert</strong> when the action doesn't improve things — closed-loop remediation under an L0–L3 autonomy ceiling.</p>
+          <p class="gap"><b>Market gap:</b> most automation fires scripts and moves on, with no proof of improvement and no automatic undo of a no-op or regression.</p>
+          <span class="tag live">● Live</span>
+        </div>
+        <div class="cap">
+          <h3>AI-native (MCP) control plane with consent-over-keys onboarding</h3>
+          <p>Every capability is a vetted, risk-gated, audited Model Context Protocol tool an LLM can call in natural language — and each platform is onboarded with a least-privilege, auto-verified grant, never keys-to-the-kingdom.</p>
+          <p class="gap"><b>Market gap:</b> endpoint/DaaS suites bolt a chatbot onto a dashboard; an end-to-end MCP-native, least-privilege operations plane is new.</p>
+          <span class="tag live">● Live</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- LOCAL TOOLS -->
+    <section id="local-tools">
+      <h2><span class="num">3</span> Local Windows tools <span style="font-size:14px;font-weight:600;color:var(--muted)">(12 · live on Windows)</span></h2>
+      <p class="sub">Backed by a hardened PowerShell engine: scripts are passed via <code>-EncodedCommand</code>, every invocation has a hard timeout with process-tree kill, and output is returned as structured JSON.</p>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th>Tool</th><th>Purpose</th><th>Key inputs</th><th>Class</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="toolname mono">powershell_run</td><td>Execute an arbitrary PowerShell script (statically risk-scored)</td><td class="mono">script, timeoutMs?, workingDir?</td><td><span class="pill mut">Mutating ⚠</span></td></tr>
+            <tr><td class="toolname mono">wmi_query</td><td>Query WMI/CIM via Get-CimInstance</td><td class="mono">className | wql, namespace?, filter?</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">system_info</td><td>OS / hardware / uptime summary</td><td class="mono">—</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">service_list</td><td>Enumerate Windows services</td><td class="mono">filter?, status?</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">service_control</td><td>Start / stop / restart a service</td><td class="mono">name, action</td><td><span class="pill mut">Mutating</span></td></tr>
+            <tr><td class="toolname mono">process_list</td><td>List processes by CPU/memory</td><td class="mono">filter?, top?</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">process_kill</td><td>Terminate a process by PID or name</td><td class="mono">pidOrName</td><td><span class="pill des">Destructive</span></td></tr>
+            <tr><td class="toolname mono">eventlog_query</td><td>Query a Windows event log</td><td class="mono">logName, level?, since?, max?</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">disk_info</td><td>Volumes, free space, SMART health</td><td class="mono">—</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">network_info</td><td>Adapters, IP, optional connectivity test</td><td class="mono">target?</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">windows_update</td><td>Scan / list / install Windows updates</td><td class="mono">action, confirm</td><td><span class="pill mut">Mutating</span></td></tr>
+            <tr><td class="toolname mono">diagnostics_run</td><td>Curated troubleshooters (SFC, DISM, connectivity)</td><td class="mono">check</td><td><span class="pill var">Varies</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- CLOUD TOOLS -->
+    <section id="cloud-tools">
+      <h2><span class="num">4</span> Windows 365 Cloud PC tools <span style="font-size:14px;font-weight:600;color:var(--muted)">(10 · needs Graph credentials)</span></h2>
+      <p class="sub">Backed by Microsoft Graph <code>deviceManagement/virtualEndpoint/cloudPCs</code>. Supports both app-only (unattended) and delegated (device-code) authentication. The provider registers automatically once Graph credentials are present.</p>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th>Tool</th><th>Purpose</th><th>Key inputs</th><th>Class</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="toolname mono">cloudpc_list</td><td>List Cloud PCs in the tenant</td><td class="mono">filter?, top?</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">cloudpc_get</td><td>Read one Cloud PC's properties</td><td class="mono">cloudPcId</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">cloudpc_provision</td><td>Assign a provisioning policy to a group</td><td class="mono">provisioningPolicyId, groupId</td><td><span class="pill mut">Mutating</span></td></tr>
+            <tr><td class="toolname mono">cloudpc_reboot</td><td>Reboot a Cloud PC</td><td class="mono">cloudPcId</td><td><span class="pill mut">Mutating</span></td></tr>
+            <tr><td class="toolname mono">cloudpc_reprovision</td><td>Reprovision (replaces OS &amp; local data)</td><td class="mono">cloudPcId</td><td><span class="pill des">Destructive</span></td></tr>
+            <tr><td class="toolname mono">cloudpc_restore</td><td>Restore from a snapshot</td><td class="mono">cloudPcId, snapshotId</td><td><span class="pill des">Destructive</span></td></tr>
+            <tr><td class="toolname mono">cloudpc_resize</td><td>Change vCPU/storage (service plan)</td><td class="mono">cloudPcId, targetServicePlanId</td><td><span class="pill mut">Mutating</span></td></tr>
+            <tr><td class="toolname mono">cloudpc_rename</td><td>Change the display name</td><td class="mono">cloudPcId, displayName</td><td><span class="pill mut">Mutating</span></td></tr>
+            <tr><td class="toolname mono">cloudpc_troubleshoot</td><td>Run the Graph troubleshoot action</td><td class="mono">cloudPcId</td><td><span class="pill mut">Mutating</span></td></tr>
+            <tr><td class="toolname mono">cloudpc_end_grace_period</td><td>End grace period (triggers reprovision/deprovision)</td><td class="mono">cloudPcId</td><td><span class="pill des">Destructive</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- REMOTE TOOLS -->
+    <section id="remote-tools">
+      <h2><span class="num">5</span> Remote Windows tools <span style="font-size:14px;font-weight:600;color:var(--muted)">(5 · needs configured targets)</span></h2>
+      <p class="sub">Manage remote Windows hosts over <strong>WinRM</strong> (via local PowerShell Remoting — no native dependencies) or <strong>SSH</strong> (via <code>ssh2</code>), selectable per target. Targets are declared in configuration; credentials are referenced by environment-variable name, never inlined. Arbitrary remote scripts pass through the same static risk gate as <code>powershell_run</code>.</p>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th>Tool</th><th>Purpose</th><th>Key inputs</th><th>Class</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="toolname mono">remote_target_list</td><td>List configured targets (no secrets); optional connectivity test</td><td class="mono">test?</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">remote_run</td><td>Execute an arbitrary PowerShell script on a target (risk-gated)</td><td class="mono">target, script, timeoutMs?</td><td><span class="pill mut">Mutating ⚠</span></td></tr>
+            <tr><td class="toolname mono">remote_system_info</td><td>OS / hardware / uptime summary from a target</td><td class="mono">target</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">remote_service_control</td><td>Start / stop / restart a service on a target</td><td class="mono">target, name, action</td><td><span class="pill mut">Mutating</span></td></tr>
+            <tr><td class="toolname mono">remote_eventlog_query</td><td>Query a Windows event log on a target</td><td class="mono">target, logName, level?, since?, max?</td><td><span class="pill read">Read-only</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- AWS WORKSPACES TOOLS -->
+    <section id="aws-tools">
+      <h2><span class="num">6</span> AWS WorkSpaces tools <span style="font-size:14px;font-weight:600;color:var(--muted)">(19 · needs AWS region)</span></h2>
+      <p class="sub">Manage Amazon WorkSpaces (cloud DaaS) via the official AWS SDK. Credentials resolve through the standard AWS chain (explicit keys, named profile, or IAM role). Its strategic role is as the <strong>cross-cloud failover target</strong> for the later continuity phase. The provider activates whenever <code>AWS_REGION</code> is set.</p>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th>Tool</th><th>Purpose</th><th>Key inputs</th><th>Class</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="toolname mono">workspace_list</td><td>List WorkSpaces (DescribeWorkspaces), optionally by directory</td><td class="mono">directoryId?, limit?</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">workspace_get</td><td>Read a single WorkSpace by id</td><td class="mono">workspaceId</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">workspace_start</td><td>Start a stopped WorkSpace</td><td class="mono">workspaceId</td><td><span class="pill mut">Mutating</span></td></tr>
+            <tr><td class="toolname mono">workspace_stop</td><td>Stop a running WorkSpace</td><td class="mono">workspaceId</td><td><span class="pill mut">Mutating</span></td></tr>
+            <tr><td class="toolname mono">workspace_reboot</td><td>Reboot a WorkSpace</td><td class="mono">workspaceId</td><td><span class="pill mut">Mutating</span></td></tr>
+            <tr><td class="toolname mono">workspace_rebuild</td><td>Rebuild from bundle (system volume recreated)</td><td class="mono">workspaceId</td><td><span class="pill des">Destructive</span></td></tr>
+            <tr><td class="toolname mono">workspace_provision</td><td>Create a WorkSpace for a directory user (failover target)</td><td class="mono">directoryId, userName, bundleId, runningMode?</td><td><span class="pill mut">Mutating</span></td></tr>
+            <tr><td class="toolname mono">workspace_terminate</td><td>Permanently terminate a WorkSpace (both volumes destroyed)</td><td class="mono">workspaceId</td><td><span class="pill des">Destructive</span></td></tr>
+            <tr><td class="toolname mono">workspace_restore</td><td>Restore a WorkSpace from its last snapshot</td><td class="mono">workspaceId</td><td><span class="pill mut">Mutating</span></td></tr>
+            <tr><td class="toolname mono">workspace_migrate</td><td>Migrate a WorkSpace to a new bundle (recreates from image)</td><td class="mono">workspaceId, bundleId</td><td><span class="pill des">Destructive</span></td></tr>
+            <tr><td class="toolname mono">workspace_modify</td><td>Resize compute / running mode / volume sizes</td><td class="mono">workspaceId, computeTypeName?, runningMode?, …</td><td><span class="pill mut">Mutating</span></td></tr>
+            <tr><td class="toolname mono">workspace_connection_status</td><td>Real user-session connectivity (CONNECTED/DISCONNECTED)</td><td class="mono">workspaceId?</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">workspace_snapshots</td><td>List rebuild + restore snapshots for a WorkSpace</td><td class="mono">workspaceId</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">workspace_standby_create</td><td>Create a cross-region standby (DR replica)</td><td class="mono">primaryRegion, primaryWorkspaceId, directoryId</td><td><span class="pill mut">Mutating</span></td></tr>
+            <tr><td class="toolname mono">workspace_pool_list</td><td>List WorkSpaces Pools (non-persistent substrate)</td><td class="mono">poolId?</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">workspace_pool_start</td><td>Start a WorkSpaces Pool</td><td class="mono">poolId</td><td><span class="pill mut">Mutating</span></td></tr>
+            <tr><td class="toolname mono">workspace_pool_stop</td><td>Stop a WorkSpaces Pool</td><td class="mono">poolId</td><td><span class="pill mut">Mutating</span></td></tr>
+            <tr><td class="toolname mono">workspace_pool_session_list</td><td>List active pool streaming sessions</td><td class="mono">poolId, userId?</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">workspace_pool_session_terminate</td><td>Terminate a pool streaming session</td><td class="mono">sessionId</td><td><span class="pill des">Destructive</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- AZURE VIRTUAL DESKTOP TOOLS -->
+    <section id="avd-tools">
+      <h2><span class="num">7</span> Azure Virtual Desktop tools <span style="font-size:14px;font-weight:600;color:var(--muted)">(8 · needs AVD config)</span></h2>
+      <p class="sub">Manage Azure-hosted VDI via the official <code>@azure/arm-desktopvirtualization</code> SDK — host pools, session hosts (with drain-mode maintenance), and live user-session control. Reuses the same Entra app credentials as Windows 365, scoped to Azure Resource Manager. Activates when <code>AVD_SUBSCRIPTION_ID</code> + <code>AVD_RESOURCE_GROUP</code> are set.</p>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th>Tool</th><th>Purpose</th><th>Key inputs</th><th>Class</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="toolname mono">avd_hostpool_list</td><td>List host pools in the resource group</td><td class="mono">—</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">avd_sessionhost_list</td><td>List session hosts (status, session counts, drain state)</td><td class="mono">hostPool</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">avd_sessionhost_get</td><td>Detail and status for one session host</td><td class="mono">hostPool, name</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">avd_sessionhost_drain</td><td>Toggle drain (maintenance) mode on a host</td><td class="mono">hostPool, name, on</td><td><span class="pill mut">Mutating</span></td></tr>
+            <tr><td class="toolname mono">avd_session_list</td><td>List user sessions across a pool (optional user filter)</td><td class="mono">hostPool, user?</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">avd_session_disconnect</td><td>Disconnect a user session</td><td class="mono">hostPool, sessionHost, userSessionId</td><td><span class="pill mut">Mutating</span></td></tr>
+            <tr><td class="toolname mono">avd_session_logoff</td><td>Log off (sign out) a user session</td><td class="mono">hostPool, sessionHost, userSessionId</td><td><span class="pill des">Destructive</span></td></tr>
+            <tr><td class="toolname mono">avd_session_message</td><td>Send a pop-up message to a user session</td><td class="mono">hostPool, sessionHost, userSessionId, title, body</td><td><span class="pill mut">Mutating</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- CITRIX TOOLS -->
+    <section id="citrix-tools">
+      <h2><span class="num">8</span> Citrix DaaS tools <span style="font-size:14px;font-weight:600;color:var(--muted)">(12 · needs Citrix Cloud API creds)</span></h2>
+      <p class="sub">Manage a Citrix DaaS estate via the official <strong>Citrix DaaS REST APIs</strong>. Authenticates through the Citrix Cloud trust flow (customer id + API client id/secret → bearer token), then drives the <code>cvad/manage</code> resources. Activates when <code>CITRIX_CUSTOMER_ID</code> + <code>CITRIX_CLIENT_ID</code>/<code>SECRET</code> are set.</p>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th>Tool</th><th>Purpose</th><th>Key inputs</th><th>Class</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="toolname mono">citrix_deliverygroup_list</td><td>List delivery groups with machine/app counts</td><td class="mono">—</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">citrix_catalog_list</td><td>List machine catalogs</td><td class="mono">—</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">citrix_machine_list</td><td>List machines (VDAs) with power, registration, load</td><td class="mono">deliveryGroup?</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">citrix_machine_power</td><td>Power action (turnon/off, shutdown, restart, suspend, resume)</td><td class="mono">machineId, action</td><td><span class="pill mut">Mutating</span></td></tr>
+            <tr><td class="toolname mono">citrix_machine_maintenance</td><td>Toggle maintenance mode</td><td class="mono">machineId, on</td><td><span class="pill mut">Mutating</span></td></tr>
+            <tr><td class="toolname mono">citrix_session_list</td><td>List sessions (optional user filter)</td><td class="mono">user?</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">citrix_session_disconnect</td><td>Disconnect a session</td><td class="mono">sessionId</td><td><span class="pill mut">Mutating</span></td></tr>
+            <tr><td class="toolname mono">citrix_session_logoff</td><td>Log off a session</td><td class="mono">sessionId</td><td><span class="pill des">Destructive</span></td></tr>
+            <tr><td class="toolname mono">citrix_session_message</td><td>Send a message to a session</td><td class="mono">sessionId, title, text</td><td><span class="pill mut">Mutating</span></td></tr>
+            <tr><td class="toolname mono">citrix_service_entitlement</td><td>List Citrix Cloud service entitlements (capability discovery)</td><td class="mono">—</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">citrix_resource_locations</td><td>List resource locations (Cloud Connector topology)</td><td class="mono">—</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">citrix_notify</td><td>Push a notification to Citrix Cloud administrators</td><td class="mono">title, description, severity?</td><td><span class="pill mut">Mutating</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- HORIZON TOOLS -->
+    <section id="horizon-tools">
+      <h2><span class="num">9</span> Omnissa Horizon tools <span style="font-size:14px;font-weight:600;color:var(--muted)">(12 · needs Connection Server creds)</span></h2>
+      <p class="sub">Manage an Omnissa Horizon (formerly VMware Horizon) estate via the official <strong>Horizon Server REST API</strong>. Logs in to the Connection Server (<code>/rest/login</code> → access token), then drives the inventory and session-control endpoints. Activates when <code>HORIZON_API_BASE</code> + credentials are set; supports self-signed lab certs via an opt-in flag.</p>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th>Tool</th><th>Purpose</th><th>Key inputs</th><th>Class</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="toolname mono">horizon_pool_list</td><td>List desktop pools</td><td class="mono">—</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">horizon_farm_list</td><td>List RDS farms</td><td class="mono">—</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">horizon_machine_list</td><td>List machines (optional pool scope)</td><td class="mono">pool?</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">horizon_machine_maintenance</td><td>Toggle maintenance mode on a machine</td><td class="mono">machineId, on</td><td><span class="pill mut">Mutating</span></td></tr>
+            <tr><td class="toolname mono">horizon_session_list</td><td>List sessions (optional user filter)</td><td class="mono">user?</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">horizon_session_disconnect</td><td>Disconnect a session</td><td class="mono">sessionId</td><td><span class="pill mut">Mutating</span></td></tr>
+            <tr><td class="toolname mono">horizon_session_logoff</td><td>Log off a session</td><td class="mono">sessionId</td><td><span class="pill des">Destructive</span></td></tr>
+            <tr><td class="toolname mono">horizon_session_reset</td><td>Reset the machine backing a session</td><td class="mono">sessionId</td><td><span class="pill des">Destructive</span></td></tr>
+            <tr><td class="toolname mono">horizon_session_message</td><td>Send a message to a session</td><td class="mono">sessionId, message, messageType?</td><td><span class="pill mut">Mutating</span></td></tr>
+            <tr><td class="toolname mono">horizon_monitor_health</td><td>Infrastructure health (connection servers, gateways)</td><td class="mono">—</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">horizon_helpdesk_session_get</td><td>Help Desk session detail for per-user troubleshooting</td><td class="mono">user?</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">horizon_pool_push_image</td><td>Schedule an instant-clone image push (recompose)</td><td class="mono">poolId, snapshotId, parentVmId?, …</td><td><span class="pill des">Destructive</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- HORIZON CLOUD TOOLS -->
+    <section id="horizoncloud-tools">
+      <h2><span class="num">10</span> Horizon Cloud tools <span style="font-size:14px;font-weight:600;color:var(--muted)">(7 · needs CSP credentials)</span></h2>
+      <p class="sub">Manage the multi-cloud <strong>Omnissa Horizon Cloud Service (next-gen)</strong> DaaS via its OAS 3.0 REST API. Authenticates through the Cloud Services Portal (CSP API token or OAuth app → bearer), then drives templates (the next-gen term for pools), pool VMs, images, and user sessions. Activates when <code>HORIZON_CLOUD_API_BASE</code> + a CSP credential are set.</p>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th>Tool</th><th>Purpose</th><th>Key inputs</th><th>Class</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="toolname mono">horizoncloud_pool_list</td><td>List templates (pools)</td><td class="mono">—</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">horizoncloud_vm_list</td><td>List VMs in a template (lifecycle + agent status)</td><td class="mono">templateId</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">horizoncloud_image_list</td><td>List image-management catalog images</td><td class="mono">—</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">horizoncloud_session_list</td><td>List a user's sessions (user-scoped API)</td><td class="mono">userId</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">horizoncloud_session_disconnect</td><td>Disconnect one or more sessions</td><td class="mono">sessionIds[]</td><td><span class="pill mut">Mutating</span></td></tr>
+            <tr><td class="toolname mono">horizoncloud_session_logoff</td><td>Log off one or more sessions</td><td class="mono">sessionIds[]</td><td><span class="pill des">Destructive</span></td></tr>
+            <tr><td class="toolname mono">horizoncloud_vm_restart</td><td>Restart a pool VM</td><td class="mono">vmId, templateId?</td><td><span class="pill des">Destructive</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- WORKSPACE ONE UEM TOOLS -->
+    <section id="ws1-tools">
+      <h2><span class="num">11</span> Workspace ONE UEM tools <span style="font-size:14px;font-weight:600;color:var(--muted)">(7 · needs UEM API creds)</span></h2>
+      <p class="sub">Manage multi-OS endpoints — <strong>iOS, Android, Windows, and macOS</strong> — through the <strong>Workspace ONE UEM (AirWatch)</strong> REST API. Authenticates via OAuth 2.0 client-credentials, then carries the tenant API key (<code>aw-tenant-code</code>) on every call. This is the managed-device substrate (substrate <code>device</code>), distinct from the desktop providers. Activates when <code>WS1_API_HOST</code> + token/credentials are set.</p>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th>Tool</th><th>Purpose</th><th>Key inputs</th><th>Class</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="toolname mono">device_list</td><td>Search managed devices (optional user/platform filter)</td><td class="mono">user?, platform?, pageSize?</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">device_get</td><td>Read a single device by id</td><td class="mono">deviceId</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">device_compliance_list</td><td>List non-compliant devices</td><td class="mono">pageSize?</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">device_lock</td><td>Lock a device (DeviceLock)</td><td class="mono">deviceId</td><td><span class="pill mut">Mutating</span></td></tr>
+            <tr><td class="toolname mono">device_clear_passcode</td><td>Clear a device passcode (ClearPasscode)</td><td class="mono">deviceId</td><td><span class="pill mut">Mutating</span></td></tr>
+            <tr><td class="toolname mono">device_query</td><td>Request a device check-in / sample (DeviceQuery)</td><td class="mono">deviceId</td><td><span class="pill mut">Mutating</span></td></tr>
+            <tr><td class="toolname mono">device_wipe</td><td>Enterprise-wipe a device (removes corporate data)</td><td class="mono">deviceId</td><td><span class="pill des">Destructive</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- STATE TOOLS -->
+    <section id="state-tools">
+      <h2><span class="num">12</span> State &amp; settings portability tools <span style="font-size:14px;font-weight:600;color:var(--muted)">(5 · needs encryption key)</span></h2>
+      <p class="sub">Capture and restore a substrate-agnostic, encrypted <strong>StateBundle</strong> of user/app/OS settings, with an honest <strong>fidelity manifest</strong> recording exactly what transferred (<code>full</code> / <code>partial</code> / <code>referenced</code>). The foundation beneath migration and failover. It <em>drives</em> native Windows mechanisms (time zone, mapped drives, printers, Wi-Fi profiles, known folders) rather than reinventing them, and never claims a perfect clone. Bundles are AES-256-GCM encrypted at rest; activates when <code>STATE_ENCRYPTION_KEY</code> is set.</p>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th>Tool</th><th>Purpose</th><th>Key inputs</th><th>Class</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="toolname mono">settings_export</td><td>Export a settings subset inline (read-only, not persisted)</td><td class="mono">providerId, entity?, scope flags</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">state_capture</td><td>Capture &amp; persist an encrypted StateBundle + fidelity manifest</td><td class="mono">providerId, entity?, scope, subject?</td><td><span class="pill mut">Mutating</span></td></tr>
+            <tr><td class="toolname mono">state_list</td><td>List stored bundles (manifests only — no secret values)</td><td class="mono">subject?</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">state_restore</td><td>Restore a bundle's restorable items onto a target</td><td class="mono">providerId, entity?, bundleId</td><td><span class="pill mut">Mutating</span></td></tr>
+            <tr><td class="toolname mono">settings_import</td><td>Import a stored bundle onto a target (alias of restore)</td><td class="mono">providerId, entity?, bundleId</td><td><span class="pill mut">Mutating</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- MIGRATION TOOLS -->
+    <section id="migration-tools">
+      <h2><span class="num">13</span> Migration tools <span style="font-size:14px;font-weight:600;color:var(--muted)">(3 · needs state subsystem)</span></h2>
+      <p class="sub">Orchestrate a traditional/VDI → cloud transformation as one audited, resumable operation: <strong>plan (dry-run) → provision → capture → restore → verify</strong>, keeping the source intact until the target is verified. Long-running execution follows the return-then-poll model — <code>migration_execute</code> returns a <code>jobId</code> you poll with <code>migration_status</code>. Requires the state subsystem (<code>STATE_ENCRYPTION_KEY</code>).</p>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th>Tool</th><th>Purpose</th><th>Key inputs</th><th>Class</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="toolname mono">migration_plan</td><td>Dry-run: validate eligibility &amp; preview the state fidelity manifest</td><td class="mono">source/target provider+entity, scope?, user?</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">migration_execute</td><td>Run provision → capture → restore → verify (returns a jobId)</td><td class="mono">source/target provider+entity, scope?, user?</td><td><span class="pill mut">Mutating</span></td></tr>
+            <tr><td class="toolname mono">migration_status</td><td>Poll a migration job's status and step progress</td><td class="mono">jobId</td><td><span class="pill read">Read-only</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- FAILOVER TOOLS -->
+    <section id="failover-tools">
+      <h2><span class="num">14</span> Continuity &amp; failover tools <span style="font-size:14px;font-weight:600;color:var(--muted)">(4 · needs state subsystem)</span></h2>
+      <p class="sub">Cross-substrate disaster recovery: assess primary health (telemetry-informed when reporting is enabled), then fail a user's workspace over to a secondary substrate (activate → rehydrate the latest StateBundle → verify → redirect) and fail back when the primary recovers. Failover is among the highest-impact operations, so it is destructive-gated and follows the return-then-poll model. Requires the state subsystem.</p>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th>Tool</th><th>Purpose</th><th>Key inputs</th><th>Class</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="toolname mono">continuity_healthcheck</td><td>Assess a substrate's health (0–100 score + signals)</td><td class="mono">providerId?</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">failover_initiate</td><td>Fail a user over to the secondary substrate (returns a jobId)</td><td class="mono">user, primary?, secondary?, targetEntity?</td><td><span class="pill des">Destructive</span></td></tr>
+            <tr><td class="toolname mono">failover_status</td><td>Poll a failover / failback job's progress</td><td class="mono">jobId</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">failover_failback</td><td>Return a user to the primary once recovered (returns a jobId)</td><td class="mono">user, primary?, secondary?, targetEntity?</td><td><span class="pill des">Destructive</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- AGENT TOOLS -->
+    <section id="agent-tools">
+      <h2><span class="num">15</span> Client troubleshooter agent tools <span style="font-size:14px;font-weight:600;color:var(--muted)">(4 · needs the agent broker)</span></h2>
+      <p class="sub">Reach the endpoint itself through an <strong>outbound-only</strong> agent that dials the broker, enrolls (with an attestation claim), and runs local diagnostics, state collection, and a <strong>self-verifying remediation loop</strong> (diagnose → checkpoint → remediate → re-measure → <em>auto-rollback if not improved</em>) under an autonomy ceiling (L0–L3). No inbound exposure on the endpoint. Enable with <code>AGENT_BROKER_ENABLED</code> on the HTTP host.</p>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th>Tool</th><th>Purpose</th><th>Key inputs</th><th>Class</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="toolname mono">agent_list</td><td>List enrolled agents (status, autonomy ceiling, allow-list)</td><td class="mono">status?</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">agent_diagnostics</td><td>Run read-only local diagnostics on an endpoint</td><td class="mono">agentId, checks?</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">agent_remediate</td><td>Self-verifying remediation with auto-rollback (needs ≥ L2)</td><td class="mono">agentId, action, target?, autonomy?</td><td><span class="pill des">Destructive</span></td></tr>
+            <tr><td class="toolname mono">agent_collect_state</td><td>Capture a diagnostic/state bundle from an endpoint</td><td class="mono">agentId</td><td><span class="pill read">Read-only</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- REPORTING TOOLS -->
+    <section id="reporting-tools">
+      <h2><span class="num">16</span> Real-time reporting tools <span style="font-size:14px;font-weight:600;color:var(--muted)">(8 · live)</span></h2>
+      <p class="sub">Backed by a normalized telemetry layer: a collector pulls metrics from every provider that advertises them, stores rolling history, and evaluates threshold alerts. Live feeds are exposed as MCP resources (<code>telemetry://fleet/snapshot</code>, <code>telemetry://fleet/alerts</code>) you can subscribe to.</p>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th>Tool</th><th>Purpose</th><th>Key inputs</th><th>Class</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="toolname mono">report_snapshot</td><td>Unified point-in-time fleet status (live pull across substrates)</td><td class="mono">providerId?</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">report_query</td><td>Query normalized history with per-series aggregates</td><td class="mono">metric?, providerId?, entity?, rangeMinutes?</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">report_subscribe</td><td>Return the live telemetry resource URIs to subscribe to</td><td class="mono">—</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">report_unsubscribe</td><td>Guidance to cancel a live subscription</td><td class="mono">uri?</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">session_monitor</td><td>Latest live metrics for a specific entity</td><td class="mono">entity, providerId?</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">alert_define</td><td>Register a threshold alert rule</td><td class="mono">metric, condition, threshold, scope?</td><td><span class="pill read">Config</span></td></tr>
+            <tr><td class="toolname mono">alert_list</td><td>List alert rules and active alerts</td><td class="mono">—</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">alert_ack</td><td>Acknowledge an active alert</td><td class="mono">alertId</td><td><span class="pill read">Config</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ONBOARDING TOOLS -->
+    <section id="onboarding-tools">
+      <h2><span class="num">17</span> Onboarding tools <span style="font-size:14px;font-weight:600;color:var(--muted)">(3 · live)</span></h2>
+      <p class="sub">The self-service front door. Rather than asking a customer to hand over standing credentials, the server tells them exactly which least-privilege grant to make on each platform, hands back a ready-to-use action (an Entra admin-consent URL, or a copy-paste IAM / RBAC / API recipe), then <strong>verifies the grant landed</strong> with a single live read. Only Microsoft Entra is a true one-click &ldquo;log in → consent → done&rdquo;; AWS, AVD, Citrix and Horizon are guided/manual with the precise permission set shown. The server never requests keys-to-the-kingdom scopes.</p>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th>Tool</th><th>Purpose</th><th>Key inputs</th><th>Class</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="toolname mono">onboarding_list</td><td>List onboardable platforms and each one's grant method (admin-consent · guided · azure-rbac · manual)</td><td class="mono">—</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">onboarding_plan</td><td>Produce the exact least-privilege grant for a platform — consent URL or copy-paste policy/recipe, with the permission set spelled out</td><td class="mono">providerId</td><td><span class="pill read">Read-only</span></td></tr>
+            <tr><td class="toolname mono">onboarding_status</td><td>Verify whether the grant landed by performing a live, read-only probe against the platform</td><td class="mono">providerId</td><td><span class="pill read">Read-only</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="margin-top:14px" class="callout">
+        <strong>Entra one-click flow.</strong> <code>onboarding_plan windows365</code> returns a real admin-consent URL
+        (<code>login.microsoftonline.com/{tenant}/adminconsent</code>) scoped to <code>CloudPC.ReadWrite.All</code> + <code>Directory.Read.All</code>;
+        the admin signs in, consents, and is redirected to the server's <code>/onboarding/callback</code> landing page. Set <code>ONBOARDING_PUBLIC_URL</code> so the redirect resolves.
+      </div>
+    </section>
+
+    <!-- SECURITY -->
+    <section id="security">
+      <h2><span class="num">18</span> Security model</h2>
+      <p class="sub">Arbitrary PowerShell is powerful and dangerous, so guardrails are mandatory, not optional. Every tool call flows through the same enforcement point.</p>
+
+      <div class="card" style="margin-bottom:16px">
+        <h3 style="margin:0 0 10px">Risk-aware execution gate</h3>
+        <p style="margin:0 0 14px;color:var(--ink-soft)">A pre-execution analyzer scores each call's blast radius and selects a disposition. For <code>powershell_run</code> it statically analyses the script; declarative tools use their mutating/destructive metadata.</p>
+        <div class="flow">
+          <span class="node">Tool call</span>
+          <span class="arrow">→</span>
+          <span class="node">Risk gate · score</span>
+          <span class="arrow">→</span>
+          <span class="node" style="color:var(--green)">read → allow</span>
+          <span class="node" style="color:var(--amber)">mutate / destructive → confirm</span>
+          <span class="node" style="color:var(--red)">irreversible → confirm @ high score</span>
+          <span class="arrow">→</span>
+          <span class="node">Audit record</span>
+        </div>
+      </div>
+
+      <div class="grid cols-2">
+        <div class="card">
+          <h3 style="margin:0 0 10px">Transport &amp; network controls</h3>
+          <ul class="clean">
+            <li><b>OAuth 2.1 or bearer auth</b> on the HTTP transport — per-integration tokens or validated JWTs (<code>401</code> without a valid credential).</li>
+            <li><b>Loopback binding</b> (<code>127.0.0.1</code>) by default; public bind is explicit opt-in.</li>
+            <li><b>Host-header validation</b> to prevent DNS-rebinding attacks.</li>
+            <li><b>Open <code>/health</code></b> probe; all MCP traffic on <code>/mcp</code> is authenticated.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3 style="margin:0 0 10px">Execution &amp; governance controls</h3>
+          <ul class="clean">
+            <li><b>Encoded commands</b> — never string-concatenated into a shell line.</li>
+            <li><b>Hard timeouts</b> with full process-tree kill on expiry.</li>
+            <li><b>Confirm-gating</b> &amp; dry-run preview for every state-changing tool.</li>
+            <li><b>Redaction-aware audit trail</b> — tool, args, caller, tenant, status, duration.</li>
+            <li><b>Per-principal allow-list</b> (least-disclosure: unauthorized tools are not even exposed) &amp; <b>per-tenant quotas / rate limits</b>.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div style="margin-top:16px" class="callout">
+        <strong>Multi-tenant SaaS auth (P-SaaS).</strong> Every HTTP caller is resolved to a single
+        <em>principal</em> &mdash; from a per-integration bearer secret or a validated <strong>OAuth 2.1</strong> JWT
+        (issuer / audience / signature via JWKS). The principal carries its tenant, tool allow/deny policy, and quota,
+        so one server safely serves many tenants: third-party integrations are denied arbitrary-execution tools by
+        default, a multi-tenant Entra app resolves Graph credentials <em>per tenant</em>, and audit + quotas are
+        partitioned per tenant. The <code>stdio</code> transport runs as a full-trust local operator.
+      </div>
+    </section>
+
+    <!-- ARCHITECTURE -->
+    <section id="architecture">
+      <h2><span class="num">19</span> Architecture</h2>
+      <p class="sub">A layered design: transport and auth are swappable, the core enforces cross-cutting concerns once, and every platform plugs in as a provider with no core changes.</p>
+
+      <div class="flow" style="margin-bottom:18px">
+        <span class="node">MCP client / SaaS backend</span>
+        <span class="arrow">→</span>
+        <span class="node">Transport<br><span style="font-weight:400;color:var(--muted);font-size:12px">stdio · Streamable HTTP · agent broker · /onboarding/callback</span></span>
+        <span class="arrow">→</span>
+        <span class="node">Core<br><span style="font-weight:400;color:var(--muted);font-size:12px">registry · config · audit · risk gate · reporting · onboarding · auth</span></span>
+        <span class="arrow">→</span>
+        <span class="node">Providers<br><span style="font-weight:400;color:var(--muted);font-size:12px">Local · Windows 365 · Remote · AWS WorkSpaces · AVD · Citrix · Horizon · Horizon Cloud · Workspace ONE UEM</span></span>
+      </div>
+
+      <div class="grid cols-3">
+        <div class="card">
+          <h3 style="margin:0 0 8px;font-size:15px">Core</h3>
+          <p style="margin:0;color:var(--ink-soft);font-size:13.5px">PowerShell engine, risk gate, audit logger, typed errors, zod config (fail-fast), and a tool registrar that wires allow-listing, confirm-gating, audit, and error mapping in one place.</p>
+        </div>
+        <div class="card">
+          <h3 style="margin:0 0 8px;font-size:15px">Provider model</h3>
+          <p style="margin:0;color:var(--ink-soft);font-size:13.5px"><code>IPlatformProvider</code> + registry, with optional capability interfaces (settings, telemetry, <code>OnboardingCapable</code>) that providers opt into; the core detects them at runtime.</p>
+        </div>
+        <div class="card">
+          <h3 style="margin:0 0 8px;font-size:15px">Transports</h3>
+          <p style="margin:0;color:var(--ink-soft);font-size:13.5px"><code>stdio</code> for a single local client; <b>Streamable HTTP</b> for remote / multi-client / SaaS use, with per-session servers and graceful shutdown.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONFIG -->
+    <section id="config">
+      <h2><span class="num">20</span> Configuration</h2>
+      <p class="sub">All configuration is environment-driven and validated at startup (fail-fast). Each provider activates only when its prerequisites are present: the Windows 365 provider needs Graph credentials, and the Remote Windows provider needs at least one configured target — otherwise they are skipped cleanly.</p>
+      <div class="table-scroll">
+        <div class="kv">
+          <div>MCP_TRANSPORT</div><div><code>stdio</code> | <code>http</code> — default <code>stdio</code></div>
+          <div>MCP_HTTP_HOST / PORT</div><div>HTTP bind — default <code>127.0.0.1</code> / <code>3000</code></div>
+          <div>MCP_HTTP_TOKEN</div><div>Bearer token — required for the HTTP transport</div>
+          <div>MCP_TOOL_ALLOWLIST</div><div>Comma-separated tool allow-list — default: all tools</div>
+          <div>MCP_AUTH_MODE</div><div><code>bearer</code> | <code>oauth</code> — default <code>bearer</code></div>
+          <div>MCP_MULTI_TENANT</div><div>Resolve Graph credentials per caller tenant — default <code>false</code></div>
+          <div>SAAS_INTEGRATIONS / _PATH</div><div>JSON of integration principals (id, <code>tokenEnv</code>, tenant, trust, allow/deny-list, quota)</div>
+          <div>OAUTH_ISSUER / OAUTH_AUDIENCE</div><div>Required in <code>oauth</code> mode — validated on every JWT</div>
+          <div>OAUTH_JWKS_URI</div><div>JWKS endpoint for signature validation (auto-derived from the issuer if omitted)</div>
+          <div>SAAS_QUOTA_PER_MINUTE / _PER_DAY</div><div>Default per-principal request budget — <code>120</code> / <code>0</code> (unlimited)</div>
+          <div>PS_EXECUTABLE</div><div><code>pwsh</code> | <code>powershell.exe</code> — auto-detected (prefers 7, falls back to 5.1)</div>
+          <div>PS_DEFAULT_TIMEOUT_MS</div><div>Default PowerShell timeout — <code>60000</code></div>
+          <div>GRAPH_AUTH_MODE</div><div><code>app</code> | <code>delegated</code> — default <code>app</code></div>
+          <div>GRAPH_TENANT_ID / CLIENT_ID</div><div>Microsoft Entra app identity (enables Windows 365 tools)</div>
+          <div>GRAPH_CLIENT_SECRET</div><div>App-only secret (required in <code>app</code> mode)</div>
+          <div>REMOTE_TARGETS</div><div>Inline JSON array of WinRM/SSH targets (enables Remote Windows tools)</div>
+          <div>REMOTE_TARGETS_PATH</div><div>Path to a JSON file of targets (alternative to inline)</div>
+          <div>REMOTE_DEFAULT_TIMEOUT_MS</div><div>Default remote execution timeout — <code>90000</code></div>
+          <div>AWS_REGION</div><div>Enables the AWS WorkSpaces provider when set</div>
+          <div>AWS_WORKSPACES_DIRECTORY_ID</div><div>Optional default directory for provisioning</div>
+          <div>AWS credentials</div><div>Explicit keys, <code>AWS_PROFILE</code>, or the default IAM role / chain</div>
+          <div>AVD_SUBSCRIPTION_ID / AVD_RESOURCE_GROUP</div><div>Enables the Azure Virtual Desktop provider (reuses GRAPH_* creds)</div>
+          <div>CITRIX_CUSTOMER_ID / CLIENT_ID / SECRET</div><div>Enables the Citrix DaaS provider (Citrix Cloud API client)</div>
+          <div>CITRIX_NOTIFICATIONS_ENABLED</div><div>Forward fired telemetry alerts to the Citrix Cloud admin console</div>
+          <div>HORIZON_API_BASE + domain/user/password</div><div>Enables the Omnissa Horizon provider (Connection Server)</div>
+          <div>HORIZON_CLOUD_API_BASE + CSP credential</div><div>Enables Horizon Cloud (next-gen) — <code>HORIZON_CLOUD_API_TOKEN</code> or <code>CLIENT_ID/SECRET</code>, plus <code>HORIZON_CLOUD_ORG_ID</code></div>
+          <div>WS1_API_HOST / TENANT_CODE / TOKEN_URL / CLIENT_ID / SECRET</div><div>Enables the Workspace ONE UEM provider (multi-OS devices)</div>
+          <div>STATE_ENCRYPTION_KEY</div><div>Enables state portability; derives the AES-256-GCM at-rest key</div>
+          <div>STATE_STORE_URI / STATE_RETENTION_DAYS</div><div>StateBundle store location &amp; retention — <code>./state</code> / <code>30</code></div>
+          <div>MIGRATION_RETAIN_SOURCE</div><div>Keep the migration source until the target is verified — default <code>true</code></div>
+          <div>CONTINUITY_PRIMARY / SECONDARY</div><div>Default failover substrates (provider ids)</div>
+          <div>FAILOVER_MODE</div><div><code>manual</code> | <code>policy</code> — default <code>manual</code></div>
+          <div>AGENT_BROKER_ENABLED</div><div>Enable the outbound-agent broker on the HTTP host</div>
+          <div>AGENT_ENROLLMENT_TOKEN / AGENT_MAX_AUTONOMY</div><div>Agent enrollment secret &amp; autonomy ceiling (L0–L3, default L1)</div>
+          <div>ONBOARDING_PUBLIC_URL</div><div>Public base URL for the Entra consent redirect (<code>/onboarding/callback</code>)</div>
+          <div>REPORTING_ENABLED</div><div>Enable the telemetry collector + alerts — default <code>true</code></div>
+          <div>REPORTING_POLL_INTERVAL_MS</div><div>Telemetry collection cadence — <code>15000</code></div>
+          <div>REPORTING_RETENTION_MINUTES</div><div>Rolling history window — <code>360</code></div>
+          <div>AUDIT_LOG_PATH / LOG_LEVEL</div><div>Audit sink &amp; pino log level — <code>./logs/audit.log</code> / <code>info</code></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- GETTING STARTED -->
+    <section id="getting-started">
+      <h2><span class="num">21</span> Getting started</h2>
+      <p class="sub">Requires Node.js ≥ 18.18 and Windows with PowerShell 7 or Windows PowerShell 5.1 for the local provider.</p>
+      <pre class="block"><span class="c"># Install &amp; build</span>
+npm install
+copy .env.example .env   <span class="c"># then edit .env</span>
+npm run build
+
+<span class="c"># Run over stdio (local AI client)</span>
+npm start
+
+<span class="c"># Run over Streamable HTTP (remote / multi-client / SaaS)</span>
+<span class="k">$env:MCP_HTTP_TOKEN</span> = "your-secret-token"
+npm run start:http
+
+<span class="c"># Verify: build + lint + tests</span>
+npm run build; npm run lint; npm test</pre>
+      <div style="margin-top:14px" class="callout">
+        <strong>VS Code wiring included.</strong> A sample client configuration lives in
+        <code>.vscode/mcp.json</code>; once built, VS Code can launch the server over <code>stdio</code> directly.
+      </div>
+    </section>
+
+    <!-- ROADMAP -->
+    <section id="roadmap">
+      <h2><span class="num">22</span> Roadmap &amp; phasing</h2>
+      <p class="sub">The MVP is shipped and verified. Later phases extend coverage without re-cutting the core abstractions.</p>
+      <div class="card">
+        <div class="phase">
+          <span class="code">P0</span>
+          <span class="body"><b>Scaffold &amp; core</b> — config, logger/audit, server + registry, both transports + auth.</span>
+          <span class="status done">Shipped</span>
+        </div>
+        <div class="phase">
+          <span class="code">P1a</span>
+          <span class="body"><b>Local Windows provider</b> — PowerShell engine, WMI, 12 tools.</span>
+          <span class="status done">Shipped</span>
+        </div>
+        <div class="phase">
+          <span class="code">P1b</span>
+          <span class="body"><b>Windows 365 provider</b> — Graph client, 10 Cloud PC tools.</span>
+          <span class="status done">Shipped</span>
+        </div>
+        <div class="phase">
+          <span class="code">P1c</span>
+          <span class="body"><b>Hardening</b> — audit wiring, timeouts, destructive-op gating, tests, docs.</span>
+          <span class="status done">Shipped</span>
+        </div>
+        <div class="phase">
+          <span class="code">P2</span>
+          <span class="body"><b>Remote Windows</b> — WinRM and SSH, per-target selectable.</span>
+          <span class="status done">Shipped</span>
+        </div>
+        <div class="phase">
+          <span class="code">P3</span>
+          <span class="body"><b>VDI / DaaS</b> — five platforms shipped: AWS WorkSpaces, Azure Virtual Desktop, Citrix DaaS, Omnissa Horizon, and Horizon Cloud next-gen (inventory, power, maintenance, session control). Horizon image recompose is live; broader image rollout lands with orchestration.</span>
+          <span class="status done">Shipped</span>
+        </div>
+        <div class="phase">
+          <span class="code">P-Report</span>
+          <span class="body"><b>Real-time reporting</b> — normalized telemetry, time-series store, resource subscriptions, threshold alerts.</span>
+          <span class="status done">Shipped</span>
+        </div>
+        <div class="phase">
+          <span class="code">P-Onboarding</span>
+          <span class="body"><b>Self-service onboarding</b> — least-privilege grant plans per platform, one-click Entra admin-consent URL + <code>/onboarding/callback</code>, and live grant verification. Programmatic app-creation path deferred.</span>
+          <span class="status done">Shipped</span>
+        </div>
+        <div class="phase">
+          <span class="code">P-SaaS</span>
+          <span class="body"><b>SaaS-grade</b> — OAuth 2.1 JWT + per-integration bearer principals, per-tenant Graph credential resolution, per-principal allow-list (least-disclosure) &amp; per-tenant quotas / audit. Horizontal scaling / shared session store deferred.</span>
+          <span class="status done">Shipped</span>
+        </div>
+        <div class="phase">
+          <span class="code">P-State</span>
+          <span class="body"><b>State portability</b> — substrate-agnostic capture/restore, encrypted StateBundle, fidelity manifest (settings tier). USMT/FSLogix bulk-data deferred.</span>
+          <span class="status done">Shipped</span>
+        </div>
+        <div class="phase">
+          <span class="code">P-Migrate</span>
+          <span class="body"><b>Cloud transformation</b> — traditional / VDI → Windows 365 migration orchestrator: plan → provision → capture → restore → verify, async with source retention.</span>
+          <span class="status done">Shipped</span>
+        </div>
+        <div class="phase">
+          <span class="code">P-Failover</span>
+          <span class="body"><b>Cross-substrate continuity</b> — health-triggered failover &amp; fail-back between substrates, telemetry-informed, with state rehydration. Async, gated, audited.</span>
+          <span class="status done">Shipped</span>
+        </div>
+        <div class="phase">
+          <span class="code">P-Agent</span>
+          <span class="body"><b>Client troubleshooter agent</b> — outbound broker, enrollment + attestation, autonomy ladder (L0–L3), self-verifying remediation with auto-rollback. mTLS hardening &amp; edge telemetry later.</span>
+          <span class="status done">Shipped</span>
+        </div>
+        <div class="phase">
+          <span class="code">P-MultiOS</span>
+          <span class="body"><b>Beyond Windows</b> — Workspace ONE UEM manages iOS / Android / Windows / macOS devices today; Intune MDM and Linux (SSH) providers are next.</span>
+          <span class="status done">Partially shipped</span>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Windows MCP Server · Capability Report · v0.1.0 (MVP+)</span>
+    <span>Generated 2026-06-11 · Source: docs/technical-spec.md</span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var nav = document.querySelector('nav.toc');
+  var toolbar = document.getElementById('toolbar');
+  var search = document.getElementById('toolSearch');
+  var envFilter = document.getElementById('envFilter');
+  var riskFilters = document.getElementById('riskFilters');
+  var countEl = document.getElementById('toolCount');
+  var noResults = document.getElementById('noResults');
+  var clearLink = document.getElementById('clearFilters');
+  if (!toolbar || !search) return;
+
+  // Stack the filter bar directly beneath the sticky nav.
+  function placeToolbar() { if (nav) toolbar.style.top = nav.offsetHeight + 'px'; }
+  placeToolbar();
+  window.addEventListener('resize', placeToolbar);
+  window.addEventListener('load', placeToolbar);
+
+  function sectionLabel(section) {
+    var h2 = section.querySelector('h2');
+    if (!h2) return section.id;
+    var clone = h2.cloneNode(true);
+    Array.prototype.slice.call(clone.querySelectorAll('span')).forEach(function (s) { s.parentNode.removeChild(s); });
+    return clone.textContent.replace(/\s+/g, ' ').trim() || section.id;
+  }
+
+  var allSections = Array.prototype.slice.call(document.querySelectorAll('main section'));
+  var toolSections = allSections.filter(function (s) { return s.querySelector('td.toolname'); });
+  var toolSectionSet = new Map();
+  toolSections.forEach(function (s) { toolSectionSet.set(s, true); });
+
+  var items = [];
+  toolSections.forEach(function (section) {
+    var opt = document.createElement('option');
+    opt.value = section.id;
+    opt.textContent = sectionLabel(section);
+    envFilter.appendChild(opt);
+    Array.prototype.slice.call(section.querySelectorAll('tbody tr')).forEach(function (row) {
+      if (!row.querySelector('td.toolname')) return;
+      var pill = row.querySelector('.pill');
+      var risk = 'var';
+      if (pill) { ['read', 'mut', 'des', 'var'].forEach(function (r) { if (pill.classList.contains(r)) risk = r; }); }
+      items.push({ row: row, env: section.id, risk: risk, text: row.textContent.toLowerCase() });
+    });
+  });
+
+  var total = items.length;
+  search.placeholder = 'Search ' + total + ' tools by name or description…';
+  var currentRisk = 'all';
+
+  function apply() {
+    var q = search.value.trim().toLowerCase();
+    var env = envFilter.value;
+    var active = q !== '' || currentRisk !== 'all' || env !== 'all';
+    var visible = 0;
+
+    items.forEach(function (it) {
+      var ok = (!q || it.text.indexOf(q) !== -1) &&
+               (currentRisk === 'all' || it.risk === currentRisk) &&
+               (env === 'all' || it.env === env);
+      it.row.classList.toggle('tool-hidden', !ok);
+      if (ok) visible++;
+    });
+
+    allSections.forEach(function (s) {
+      if (!active) { s.classList.remove('section-hidden'); return; }
+      if (toolSectionSet.has(s)) {
+        var any = !!s.querySelector('tbody tr:not(.tool-hidden) td.toolname');
+        s.classList.toggle('section-hidden', !any);
+      } else {
+        s.classList.add('section-hidden');
+      }
+    });
+
+    Array.prototype.slice.call(document.querySelectorAll('nav.toc a')).forEach(function (a) {
+      var href = a.getAttribute('href') || '';
+      if (href.charAt(0) !== '#') return;
+      var sec = document.getElementById(href.slice(1));
+      a.classList.toggle('dim', !!(active && sec && sec.classList.contains('section-hidden')));
+    });
+
+    countEl.innerHTML = '<b>' + visible + '</b> of ' + total + ' tools';
+    if (noResults) noResults.classList.toggle('show', active && visible === 0);
+  }
+
+  search.addEventListener('input', apply);
+  search.addEventListener('keydown', function (e) { if (e.key === 'Escape') { search.value = ''; apply(); } });
+  envFilter.addEventListener('change', apply);
+  riskFilters.addEventListener('click', function (e) {
+    var btn = e.target.closest('.chip');
+    if (!btn) return;
+    currentRisk = btn.getAttribute('data-risk');
+    Array.prototype.slice.call(riskFilters.querySelectorAll('.chip')).forEach(function (c) { c.classList.toggle('active', c === btn); });
+    apply();
+  });
+  if (clearLink) clearLink.addEventListener('click', function (e) {
+    e.preventDefault();
+    search.value = ''; envFilter.value = 'all'; currentRisk = 'all';
+    Array.prototype.slice.call(riskFilters.querySelectorAll('.chip')).forEach(function (c) { c.classList.toggle('active', c.getAttribute('data-risk') === 'all'); });
+    apply();
+  });
+
+  var statTools = document.getElementById('statTools');
+  if (statTools) statTools.addEventListener('click', function () {
+    setTimeout(function () { search.focus({ preventScroll: true }); }, 320);
+  });
+
+  apply();
+})();
+</script>
+
+</body>
+</html>
